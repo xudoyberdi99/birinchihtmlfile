@@ -15,38 +15,27 @@ steps:
   - name: Checkout repository
     uses: actions/checkout@v4
 
-  - name: Set up Python 3.11
+  - name: Set up Python
     uses: actions/setup-python@v5
     with:
       python-version: "3.11"
 
-  - name: Install system dependencies
+  - name: Install dependencies
     run: |
       sudo apt update
       sudo apt install -y \
-      git zip unzip openjdk-17-jdk \
-      autoconf automake libtool pkg-config \
-      cmake build-essential \
-      libffi-dev libssl-dev \
-      python3-pip
+        git zip unzip openjdk-17-jdk \
+        autoconf automake autotools-dev \
+        libtool pkg-config \
+        cmake build-essential \
+        libffi-dev libssl-dev \
+        zlib1g-dev
 
   - name: Install Buildozer
     run: |
       python -m pip install --upgrade pip
       pip install cython==0.29.36
       pip install buildozer
-
-  - name: Accept Android SDK licenses
-    run: |
-      mkdir -p $HOME/.android
-      touch $HOME/.android/repositories.cfg
-      yes | sdkmanager --licenses || true
-
-  - name: Install Android SDK components
-    run: |
-      yes | sdkmanager "platform-tools"
-      yes | sdkmanager "platforms;android-35"
-      yes | sdkmanager "build-tools;35.0.0"
 
   - name: Build APK
     env:

@@ -1,29 +1,41 @@
 [app]
+
 title = AI Yordamchi
+
 package.name = aiyordamchi
-package.domain = org.user
+
+package.domain = org.xudoyberdi
 
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas
-source.exclude_dirs = __pycache__,.git
-source.exclude_exts = pyc
 
-version = 0.1
+source.include_exts = py,png,jpg,kv,atlas,json,txt
+
+version = 1.0
 
 requirements = python3,kivy,requests,telethon,qrcode,pillow,certifi,pyaes,rsa
 
 orientation = portrait
+
 fullscreen = 0
 
-android.permissions = INTERNET,ACCESS_NETWORK_STATE
-android.api = 35
-android.minapi = 23
-android.ndk = 25b
-android.archs = arm64-v8a,armeabi-v7a
+android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 
-android.allow_backup = False
-android.private_storage = True
+android.api = 34
+
+android.minapi = 23
+
+android.ndk = 25b
+
+android.archs = arm64-v8a, armeabi-v7a
+
+android.accept_sdk_license = True
+
+presplash.color = #FFFFFF
+
+icon.filename = icon.png
 
 [buildozer]
+
 log_level = 2
+
 warn_on_root = 0

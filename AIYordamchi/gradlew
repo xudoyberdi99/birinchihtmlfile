@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+# Copyright © 2015-2021 the original authors.
+#
+# Gradle start up script for POSIX compatible shells
+#
+
+APP_NAME="Gradle"
+APP_BASE_NAME=$(basename "$0")
+
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+
+MAX_FD="maximum"
+warn () { echo "$*"; }
+die () { echo; echo "$*"; echo; exit 1; }
+
+# OS specific support (must be 'true' or 'false').
+cygwin=false
+msys=false
+darwin=false
+nonstop=false
+
+case "$(uname)" in
+  CYGWIN* ) cygwin=true ;;
+  Darwin* ) darwin=true ;;
+  MSYS* | MINGW* ) msys=true ;;
+  NONSTOP* ) nonstop=true ;;
+esac
+
+# Determine the Java command to use to start the JVM.
+if [ -n "$JAVA_HOME" ] ; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+        JAVACMD="$JAVA_HOME/jre/sh/java"
+    else
+        JAVACMD="$JAVA_HOME/bin/java"
+    fi
+    if [ ! -x "$JAVACMD" ] ; then
+        die "JAVA_HOME is set to an invalid directory: $JAVA_HOME"
+    fi
+else
+    JAVACMD="java"
+    which java >/dev/null 2>&1 || die "Cannot find Java. Set JAVA_HOME."
+fi
+
+# App home detection
+APP_HOME=$(cd "$(dirname "$0")" && pwd -P) || exit
+
+exec "$JAVACMD" \
+  -classpath "$CLASSPATH" \
+  org.gradle.wrapper.GradleWrapperMain \
+  "$@"

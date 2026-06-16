@@ -29,12 +29,24 @@ jobs:
           unzip -q /tmp/gradle-8.2.1-bin.zip -d /opt/gradle
           echo "/opt/gradle/gradle-8.2.1/bin" >> $GITHUB_PATH
 
-      - name: Build Debug APK
-        run: gradle assembleDebug --stacktrace
+      - name: Show repo structure
+        run: find . -name "settings.gradle" -o -name "build.gradle" | sort
+
+      - name: Find project root and build APK
+        run: |
+          SETTINGS=$(find . -name "settings.gradle" -maxdepth 4 | head -1)
+          if [ -z "$SETTINGS" ]; then
+            echo "XATO: settings.gradle topilmadi!"
+            ls -la
+            exit 1
+          fi
+          PROJECT_DIR=$(dirname "$SETTINGS")
+          echo "Loyiha joyi: $PROJECT_DIR"
+          gradle -p "$PROJECT_DIR" assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AIYordamchi-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: '**/outputs/apk/debug/*.apk'
           retention-days: 7

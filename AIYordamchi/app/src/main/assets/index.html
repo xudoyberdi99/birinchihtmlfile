@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AI Yordamchi</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --purple: #6B3FA0;
+    --purple-dark: #4A2870;
+    --purple-light: #EEE8F7;
+    --white: #FFFFFF;
+    --bg: #F4F1F9;
+    --gray: #F0EDF5;
+    --border: #E0D8EF;
+    --text: #1A1A2E;
+    --text-muted: #7A6B9A;
+    --green: #22C55E;
+    --shadow: 0 2px 12px rgba(107,63,160,0.10);
+  }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    background: var(--purple);
+    padding: 14px 16px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(74,40,112,0.3);
+  }
+  .bot-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .bot-info { flex: 1; }
+  .bot-name { color: #fff; font-size: 16px; font-weight: 600; }
+  .bot-sub { color: rgba(255,255,255,0.75); font-size: 12px; display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; flex-shrink: 0; }
+  .menu-btn { background: none; border: none; color: rgba(255,255,255,0.8); font-size: 22px; cursor: pointer; padding: 4px; }
+
+  /* MESSAGES */
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .date-label {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 4px 0;
+  }
+  .msg { display: flex; flex-direction: column; max-width: 84%; gap: 3px; }
+  .msg.user { align-self: flex-end; align-items: flex-end; }
+  .msg.bot  { align-self: flex-start; align-items: flex-start; }
+
+  .bubble {
+    padding: 11px 15px;
+    border-radius: 20px;
+    font-size: 14.5px;
+    line-height: 1.55;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+  .msg.user .bubble {
+    background: var(--purple);
+    color: #fff;
+    border-bottom-right-radius: 5px;
+    box-shadow: var(--shadow);
+  }
+  .msg.bot .bubble {
+    background: var(--white);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 5px;
+    box-shadow: var(--shadow);
+  }
+  .msg-time { font-size: 11px; color: var(--text-muted); padding: 0 4px; }
+
+  /* TYPING */
+  .typing-bubble {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    border-bottom-left-radius: 5px;
+    padding: 14px 18px;
+    display: flex; gap: 5px; align-items: center;
+    box-shadow: var(--shadow);
+  }
+  .typing-bubble span {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--purple-light);
+    border: 2px solid var(--purple);
+    animation: bounce 1.1s infinite ease-in-out;
+  }
+  .typing-bubble span:nth-child(2) { animation-delay: 0.18s; }
+  .typing-bubble span:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-7px); } }
+
+  /* QUICK REPLIES */
+  .chips {
+    display: flex; gap: 8px; padding: 0 12px 10px;
+    overflow-x: auto; flex-shrink: 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    background: var(--white);
+    border: 1.5px solid var(--purple);
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 13px;
+    color: var(--purple);
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 500;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .chip:active { background: var(--purple-light); }
+
+  /* INPUT BAR */
+  .input-bar {
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    padding: 10px 12px;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .input-wrap {
+    flex: 1;
+    background: var(--gray);
+    border-radius: 24px;
+    border: 1.5px solid var(--border);
+    padding: 9px 15px;
+    display: flex;
+    align-items: center;
+    transition: border-color 0.2s;
+  }
+  .input-wrap:focus-within { border-color: var(--purple); }
+  textarea {
+    flex: 1; border: none; background: transparent;
+    resize: none; outline: none;
+    font-size: 15px; color: var(--text);
+    font-family: inherit;
+    max-height: 100px; line-height: 1.4;
+  }
+  textarea::placeholder { color: var(--text-muted); }
+  .send-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--purple);
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 20px;
+    flex-shrink: 0;
+    transition: opacity 0.2s, transform 0.1s;
+    box-shadow: 0 3px 10px rgba(107,63,160,0.3);
+  }
+  .send-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+  .send-btn:active:not(:disabled) { transform: scale(0.92); }
+
+  /* SETTINGS MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex; align-items: flex-end;
+    z-index: 100;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--white);
+    border-radius: 24px 24px 0 0;
+    padding: 20px 20px 36px;
+    width: 100%;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-handle {
+    width: 40px; height: 4px; border-radius: 2px;
+    background: var(--border);
+    margin: 0 auto 20px;
+  }
+  .modal h3 { font-size: 17px; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; display: block; font-weight: 500; }
+  .form-input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    background: var(--gray);
+  }
+  .form-input:focus { border-color: var(--purple); }
+  .save-btn {
+    width: 100%;
+    background: var(--purple);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 4px;
+    box-shadow: 0 4px 12px rgba(107,63,160,0.3);
+  }
+  .save-btn:active { opacity: 0.85; }
+  .clear-btn {
+    width: 100%;
+    background: none;
+    color: #E74C3C;
+    border: 1.5px solid #E74C3C;
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .hint {
+    font-size: 12px; color: var(--text-muted);
+    margin-top: 8px; line-height: 1.5;
+  }
+  .hint a { color: var(--purple); }
+
+  /* WELCOME */
+  .welcome {
+    text-align: center;
+    padding: 30px 20px;
+    flex-shrink: 0;
+  }
+  .welcome-icon { font-size: 52px; margin-bottom: 12px; }
+  .welcome h2 { font-size: 20px; font-weight: 700; color: var(--purple); margin-bottom: 8px; }
+  .welcome p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .api-badge {
+    display: inline-block;
+    background: var(--purple-light);
+    color: var(--purple);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 10px;
+  }
+  .api-badge.connected { background: #DCFCE7; color: #166534; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="bot-avatar">🤖</div>
+  <div class="bot-info">
+    <div class="bot-name">AI Yordamchi</div>
+    <div class="bot-sub">
+      <span class="status-dot" id="sdot"></span>
+      <span id="sstatus">API kalit kerak</span>
+    </div>
+  </div>
+  <button class="menu-btn" onclick="openSettings()" title="Sozlamalar">⚙️</button>
+</div>
+
+<!-- MESSAGES -->
+<div class="messages" id="msgs">
+  <div class="date-label">Bugun</div>
+  <div class="welcome" id="welcome">
+    <div class="welcome-icon">🤖</div>
+    <h2>AI Yordamchi</h2>
+    <p>Anthropic Claude AI bilan ishlaydi.<br>Istalgan savolni bering!</p>
+    <div class="api-badge" id="apibadge">⚙️ API kalit kiriting</div>
+  </div>
+</div>
+
+<!-- QUICK CHIPS -->
+<div class="chips" id="chips">
+  <div class="chip" onclick="quickSend('Salom! Kimsan sen?')">👋 Salom</div>
+  <div class="chip" onclick="quickSend('Menga qiziqarli fakt ayt')">💡 Fakt</div>
+  <div class="chip" onclick="quickSend('Big Data haqida qisqacha tushuntir')">📊 Big Data</div>
+  <div class="chip" onclick="quickSend('Python dasturlash tilini o\'rganishni qanday boshlayman?')">💻 Python</div>
+  <div class="chip" onclick="quickSend('Menga hazil gapir')">😄 Hazil</div>
+  <div class="chip" onclick="quickSend('Sun\'iy intellekt nima?')">🧠 AI nima?</div>
+</div>
+
+<!-- INPUT BAR -->
+<div class="input-bar">
+  <div class="input-wrap">
+    <textarea id="inp" rows="1" placeholder="Xabar yozing..." oninput="resize(this)" onkeydown="keyDown(event)"></textarea>
+  </div>
+  <button class="send-btn" id="sendbtn" onclick="send()" disabled>➤</button>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="overlay" onclick="closeOnBg(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>⚙️ Sozlamalar</h3>
+    <div class="form-group">
+      <label class="form-label">Anthropic API Kalit</label>
+      <input type="password" class="form-input" id="keyinput" placeholder="sk-ant-api03-..." />
+      <p class="hint">
+        API kalitni <strong>console.anthropic.com</strong> saytidan oling.<br>
+        Kalit qurilmangizda xavfsiz saqlanadi.
+      </p>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Model</label>
+      <select class="form-input" id="modelsel">
+        <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (Tavsiya)</option>
+        <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (Tez)</option>
+      </select>
+    </div>
+    <button class="save-btn" onclick="saveSettings()">✓ Saqlash</button>
+    <button class="clear-btn" onclick="clearChat()">🗑 Suhbatni tozalash</button>
+  </div>
+</div>
+
+<script>
+  // State
+  let apiKey = localStorage.getItem('ai_api_key') || '';
+  let model = localStorage.getItem('ai_model') || 'claude-sonnet-4-6';
+  let history = [];
+  let busy = false;
+
+  const inp = document.getElementById('inp');
+  const sendbtn = document.getElementById('sendbtn');
+  const msgs = document.getElementById('msgs');
+
+  // Init
+  if (apiKey) {
+    updateStatus(true);
+    document.getElementById('apibadge').textContent = '✓ Ulangan';
+    document.getElementById('apibadge').className = 'api-badge connected';
+  }
+
+  function now() {
+    const d = new Date();
+    return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+  }
+
+  function updateStatus(connected) {
+    const dot = document.getElementById('sdot');
+    const st = document.getElementById('sstatus');
+    if (connected) {
+      dot.style.background = '#4ADE80';
+      st.textContent = 'Faol • ' + model.split('-').slice(1,3).join(' ');
+    } else {
+      dot.style.background = '#F87171';
+      st.textContent = 'API kalit kerak';
+    }
+  }
+
+  function resize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+    sendbtn.disabled = !el.value.trim() || !apiKey || busy;
+  }
+
+  function keyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!sendbtn.disabled) send();
+    }
+  }
+
+  function addMsg(text, role) {
+    const d = document.createElement('div');
+    d.className = 'msg ' + role;
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.textContent = text;
+    const t = document.createElement('div');
+    t.className = 'msg-time';
+    t.textContent = now();
+    d.appendChild(b);
+    d.appendChild(t);
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+    return b;
+  }
+
+  function showTyping() {
+    const d = document.createElement('div');
+    d.className = 'msg bot';
+    d.id = 'typing';
+    d.innerHTML = '<div class="typing-bubble"><span></span><span></span><span></span></div>';
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typing');
+    if (t) t.remove();
+  }
+
+  function hideWelcome() {
+    const w = document.getElementById('welcome');
+    if (w) w.style.display = 'none';
+    const c = document.getElementById('chips');
+    if (c) c.style.display = 'none';
+  }
+
+  function quickSend(text) {
+    if (!apiKey) {
+      openSettings();
+      return;
+    }
+    inp.value = text;
+    resize(inp);
+    send();
+  }
+
+  async function send() {
+    const text = inp.value.trim();
+    if (!text || !apiKey || busy) return;
+    busy = true;
+    sendbtn.disabled = true;
+    hideWelcome();
+    inp.value = '';
+    inp.style.height = 'auto';
+    addMsg(text, 'user');
+    history.push({ role: 'user', content: text });
+    showTyping();
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: model,
+          max_tokens: 1500,
+          system: `Sen foydali va do'stona AI yordamchisan. Quyidagilarga rioya qil:
+- Uzbek tilida so'rasalar, albatta uzbek tilida javob ber
+- Ingliz tilida so'rasalar, ingliz tilida javob ber
+- Rus tilida so'rasalar, rus tilida javob ber
+- Qisqa, aniq va foydali javoblar ber
+- Emojidan o'rinli foydalanib tur`,
+          messages: history
+        })
+      });
+
+      const data = await res.json();
+      removeTyping();
+
+      if (data.content && data.content[0]) {
+        const reply = data.content[0].text;
+        history.push({ role: 'assistant', content: reply });
+        addMsg(reply, 'bot');
+      } else if (data.error) {
+        const errMsg = data.error.type === 'authentication_error'
+          ? 'API kalit noto\'g\'ri. Sozlamalarda tekshiring.'
+          : 'Xato: ' + data.error.message;
+        addMsg('❌ ' + errMsg, 'bot');
+      }
+    } catch (e) {
+      removeTyping();
+      addMsg('❌ Internetga ulanishda xato yuz berdi.', 'bot');
+    }
+
+    busy = false;
+    if (inp.value.trim() && apiKey) sendbtn.disabled = false;
+  }
+
+  // Settings
+  function openSettings() {
+    document.getElementById('keyinput').value = apiKey;
+    document.getElementById('modelsel').value = model;
+    document.getElementById('overlay').classList.add('open');
+  }
+
+  function closeSettings() {
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  function closeOnBg(e) {
+    if (e.target === document.getElementById('overlay')) closeSettings();
+  }
+
+  function saveSettings() {
+    const k = document.getElementById('keyinput').value.trim();
+    const m = document.getElementById('modelsel').value;
+    if (!k) { alert('API kalitni kiriting!'); return; }
+    apiKey = k;
+    model = m;
+    localStorage.setItem('ai_api_key', k);
+    localStorage.setItem('ai_model', m);
+    updateStatus(true);
+    document.getElementById('apibadge').textContent = '✓ Ulangan';
+    document.getElementById('apibadge').className = 'api-badge connected';
+    closeSettings();
+    if (inp.value.trim()) sendbtn.disabled = false;
+  }
+
+  function clearChat() {
+    if (!confirm('Suhbat tozalansinmi?')) return;
+    history = [];
+    const allMsgs = msgs.querySelectorAll('.msg');
+    allMsgs.forEach(m => m.remove());
+    const w = document.getElementById('welcome');
+    if (w) w.style.display = 'block';
+    const c = document.getElementById('chips');
+    if (c) c.style.display = 'flex';
+    closeSettings();
+  }
+
+  // Keyboard
+  window.addEventListener('resize', () => {
+    msgs.scrollTop = msgs.scrollHeight;
+  });
+</script>
+</body>
+</html>

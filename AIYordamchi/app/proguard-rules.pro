@@ -1,0 +1,3 @@
+-keep class com.aiyordamchi.** { *; }
+-keepattributes *Annotation*
+-keepattributes SourceFile,LineNumberTable

@@ -1,0 +1,11 @@
+<resources>
+    <style name="Theme.AIYordamchi" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#6B3FA0</item>
+        <item name="colorPrimaryVariant">#4A2870</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#9B6FC8</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="android:statusBarColor">#6B3FA0</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+    </style>
+</resources>
